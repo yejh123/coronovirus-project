@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)https://getbootstrap.com/docs/4.4/examples/blog/ -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:id="head" th:include="commons/nav::head"></head>
+<style>
+    body {
+        background-image: url("/asserts/img/background.jpg");
+        background-position: center 0;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        background-size: cover;
+        -webkit-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -ms-background-size: cover;
+    }
+    .blog-header {
+        background-image: url("/asserts/img/nav-bg.jpeg");
+        min-height: 155px;
+        height: 12vw;
+        min-width: 999px;
+        background-position: center 0;
+        background-repeat: no-repeat;
+        background-size: cover;
+        -webkit-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -ms-background-size: cover;
+    }
+    #big-photo{
+        background-image: url("/asserts/img/bg2.jpg");
+        background-position: center 0;
+        background-repeat: no-repeat;
+        background-size: cover;
+        -webkit-background-size: cover;
+        -o-background-size: cover;
+        -moz-background-size: cover;
+        -ms-background-size: cover;
+    }
+</style>
+<body>
+<!--引入header-->
+<div th:replace="commons/nav::header"></div>
+<div class="container mt-3">
+
+    <!--大图-->
+    <div id="big-photo" class="jumbotron p-4 p-md-5 text-white rounded bg-secondary">
+        <div class="col-md-6 px-0">
+            <h1 class="display-4 font-italic font-weight-bold">疫情与舆情：新冠肺炎时间线TIMELINE</h1>
+            <p class="lead my-3">从2019年12月1日至2020年4月，力求还原最真实的关于新冠肺炎的真相</p>
+            <p class="lead mb-0">数据来源：<a href="https://github.com/Pratitya/COVID-19-timeline/blob/master/%E6%97%B6%E9%97%B4%E7%BA%BFTIMELINE.md#bottom"
+                                    class="text-white font-weight-bold">COVID-19-timeline</a></p>
+        </div>
+    </div>
+</div>
+
+<main role="main" class="container">
+    <div class="row">
+        <div class="col-md-8 blog-main" th:src="@{/asserts/img/pray.jpg}">
+            <h3 class="pb-4 mb-4 font-italic border-bottom font-weight-bold">
+                新冠肺炎时间线TIMELINE
+            </h3>
+
+            <div class="blog-post ">
+                <div class="accordion" id="accordionExample">
+                    <div class="card" th:each="date:${dates}">
+                        <div class="card-header" id="headingOne">
+                            <h2 class="mb-0">
+                                <button class="btn btn-link text-dark" type="button"
+                                        data-toggle="collapse"
+                                        th:attr="data-target=${#dates.format(date, 'yyyy-MM-dd')}"
+                                        aria-expanded="true" aria-controls="collapseOne">
+                                    - [[${#dates.format(date, 'yyyy年MM月dd日')}]]
+                                </button>
+                            </h2>
+                        </div>
+                        <div id="collapseOne" th:id="${#dates.format(date, 'yyyy-MM-dd')}"
+                             class="collapse p-3 card-body"
+                             aria-labelledby="headingOne"
+                             data-parent="#accordionExample">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--引入侧边nav-->
+        <div th:replace="commons/nav::sidebar"></div>
+    </div>
+</main>
+<!--引入footer-->
+<div th:replace="commons/nav::footer"></div>
+
+<script>
+
+    $(function () {
+        $("#head").append($("<title>疫情与舆情：新冠肺炎时间线TIMELINE</title>"));
+        $(".btn-link").click(function () {
+            var date = $(this).attr("data-target");
+            var group_wuhan = $("<div></div>").addClass("bs-callout bs-callout-info text-justify");
+            var group_china = $("<div></div>").addClass("bs-callout bs-callout-warning text-justify");
+            var group_national = $("<div></div>").addClass("bs-callout bs-callout-danger text-justify");
+            var flag = 0;
+            $.getJSON("/news/date/" + date, function (res) {
+                var items = $("#" + date);
+                items.text("");
+                $.each(res, function (index, news) {
+                    let item = $("<p></p>").append("- " + news.content);
+                    if (news.locationId === 1) {
+                        group_wuhan.append(item);
+                        flag += (flag & 1) > 0 ? 0 : 1;
+                    } else if (news.locationId === 2) {
+                        group_china.append(item);
+                        flag += (flag & 2) > 0 ? 0 : 2;
+                    } else {
+                        group_national.append(item);
+                        flag += (flag & 4) > 0 ? 0 : 4;
+                    }
+                });
+                //alert(flag + ", " + (flag & 1) + ", " + (flag & 2) + ", " + (flag & 4));
+                if ((flag & 1) === 1) {
+                    items.append(group_wuhan.prepend($("<h4>【武汉-湖北】</h4>")));
+                }
+                if ((flag & 2) === 2) {
+                    items.append(group_china.prepend($("<h4>【中国（除湖北）】</h4>")));
+                }
+                if ((flag & 4) === 4) {
+                    items.append(group_national.prepend($("<h4>【国际】</h4>")));
+                }
+                items.addClass("show");
+            }, 'json');
+            return false;
+        });
+    });
+</script>
+
+</body>
+</html>
